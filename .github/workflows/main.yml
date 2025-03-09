@@ -52,4 +52,4 @@ jobs:
 
       # Run Terraform Apply (only on push to main)
       - name: Terraform Apply
-        run: terraform apply
+        run: terraform apply --auto-approve=yes
