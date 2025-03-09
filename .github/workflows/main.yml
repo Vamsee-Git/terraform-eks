@@ -1,0 +1,55 @@
+name: Terraform deploy
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+
+env:
+  AWS_REGION: "us-west-1"
+  TF_VERSION: "1.5.0"
+  
+permissions:
+  id-token: write
+  contents: read
+  
+jobs:
+  terraform:
+    name: Terraform Plan/Apply
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up AWS credentials
+      - name: Configure AWS credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: arn:aws:iam::664418994073:role/github-eks-sample
+          aws-region: ap-south-1
+          id-token: true
+
+      # Install Terraform
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      # Initialize Terraform
+      - name: Terraform Init
+        run: terraform init
+
+      # Validate Terraform configuration
+      - name: Terraform Validate
+        run: terraform validate
+
+      # Run Terraform Plan
+      - name: Terraform Plan
+        run: terraform plan
+
+      # Run Terraform Apply (only on push to main)
+      - name: Terraform Apply
+        run: terraform apply
